@@ -1,0 +1,11 @@
+logging:
+  level:
+    ROOT: WARN
+    ru.pizzaneo: DEBUG
+spring:
+  datasource:
+    url: jdbc:mariadb://176.57.220.30:3306/pizzaneo
+  jpa:
+    show-sql: true
+server:
+  port: 5468

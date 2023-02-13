@@ -1,0 +1,12 @@
+logging:
+  level:
+    ROOT: WARN
+    ru.pizzaneo: DEBUG
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
+server:
+  port: 9001

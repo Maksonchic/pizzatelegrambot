@@ -1,0 +1,14 @@
+Logging:
+  level:
+    ROOT: WARN
+    ru.pizzaneo: INFO
+
+connector:
+  products:
+    url: http://localhost:9001/
+  clients:
+    url: http://localhost:5468/
+
+config:
+  buttons-size: 8
+
