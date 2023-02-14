@@ -7,6 +7,7 @@ import ru.pizzaneo.models.dto.MenuGroupsDto;
 import ru.pizzaneo.models.dto.MenuMatrixDto;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,8 +23,12 @@ public class BotCommands {
 
     public MenuMatrixDto getBasket(final long chatId) {
         try {
-            List<String> clientVariationIds = clientsAdapter.getClient(chatId).basketVariationIds();
-            return this.productsAdapter.getProductsListByIds(clientVariationIds);
+            List<String> variationIds = clientsAdapter.getClient(chatId).basketVariationIds();
+            if (variationIds.size() > 0) {
+                return this.productsAdapter.getProductsListByIds(variationIds);
+            } else {
+                return new MenuMatrixDto(new ArrayList<>());
+            }
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -43,5 +48,9 @@ public class BotCommands {
 
     public void deleteFromClientBasket(Long chatId, String variationId) {
         clientsAdapter.deleteProductFromClient(chatId, variationId);
+    }
+
+    public void clearClientBasket(Long chatId) {
+        clientsAdapter.clearClientBasket(chatId);
     }
 }

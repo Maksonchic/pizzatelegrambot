@@ -12,3 +12,7 @@ connector:
 config:
   buttons-size: 8
 
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS

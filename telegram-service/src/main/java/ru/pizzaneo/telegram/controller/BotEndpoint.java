@@ -3,7 +3,6 @@ package ru.pizzaneo.telegram.controller;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -11,7 +10,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.pizzaneo.telegram.domain.ButtonCallback;
 import ru.pizzaneo.telegram.service.BotCommands;
 import ru.pizzaneo.models.dto.MenuMatrixDto;
@@ -43,13 +41,6 @@ public class BotEndpoint extends TelegramLongPollingBot {
         this.botController = botController;
         this.menuPageSize = menuPageSize;
         this.buttonsBuilder = buttonsBuilder;
-
-        try {
-            TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-            botsApi.registerBot(this);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -99,6 +90,12 @@ public class BotEndpoint extends TelegramLongPollingBot {
                                         eBtnCommandsPrefix.menu.name() + "-" + b.id() + "-0").build())
                         .collect(Collectors.toList());
             case "basket":
+                return botController.getBasket(chatId).rows().stream().map(b ->
+                                InlineKeyboardButton.builder().text(b.name()).callbackData(
+                                        eBtnCommandsPrefix.basket_rem.name() + "-" + b.id()).build())
+                        .collect(Collectors.toList());
+            case "clear_basket":
+                botController.clearClientBasket(chatId);
                 return botController.getBasket(chatId).rows().stream().map(b ->
                                 InlineKeyboardButton.builder().text(b.name()).callbackData(
                                         eBtnCommandsPrefix.basket_rem.name() + "-" + b.id()).build())

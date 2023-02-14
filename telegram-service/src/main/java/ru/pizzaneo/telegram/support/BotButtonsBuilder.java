@@ -20,7 +20,7 @@ public class BotButtonsBuilder {
     }
 
     public List<InlineKeyboardButton> createProductsPageButtons(final MenuMatrixDto menuItems, ButtonCallback callback) {
-        List<InlineKeyboardButton> collect = menuItems.rows().stream().map(b -> {
+        List<InlineKeyboardButton> buttons = menuItems.rows().stream().map(b -> {
                     String name = b.name();
                     String callbackData = BotEndpoint.eBtnCommandsPrefix.basket_add.name() + "-" + b.id();
                     return InlineKeyboardButton
@@ -30,21 +30,24 @@ public class BotButtonsBuilder {
                             .build();
                 })
                 .collect(Collectors.toList());
-        if (callback.getCurrentPageNum() > 0) {
-            collect.add(InlineKeyboardButton.builder()
-                    .text("Назад")
-                    .callbackData(BotEndpoint.eBtnCommandsPrefix.menu.name()
-                            + "-" + callback.getId()
-                            + "-" + (callback.getCurrentPageNum() - 1)).build());
+        if (callback.getCurrentPageNum() > 0 || buttons.size() == this.menuPageSize) {
 
+            if (callback.getCurrentPageNum() > 0) {
+                buttons.add(InlineKeyboardButton.builder()
+                        .text("Назад")
+                        .callbackData(BotEndpoint.eBtnCommandsPrefix.menu.name()
+                                + "-" + callback.getId()
+                                + "-" + (callback.getCurrentPageNum() - 1)).build());
+
+            }
+            if (buttons.size() == this.menuPageSize) {
+                buttons.add(InlineKeyboardButton.builder()
+                        .text("Показать ещё")
+                        .callbackData(BotEndpoint.eBtnCommandsPrefix.menu.name()
+                                + "-" + callback.getId()
+                                + "-" + (callback.getCurrentPageNum() + 1)).build());
+            }
         }
-        if (collect.size() == this.menuPageSize) {
-            collect.add(InlineKeyboardButton.builder()
-                    .text("Показать ещё")
-                    .callbackData(BotEndpoint.eBtnCommandsPrefix.menu.name()
-                            + "-" + callback.getId()
-                            + "-" + (callback.getCurrentPageNum() + 1)).build());
-        }
-        return collect;
+        return buttons;
     }
 }
