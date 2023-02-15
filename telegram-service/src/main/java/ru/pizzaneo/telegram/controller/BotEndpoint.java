@@ -23,23 +23,26 @@ import java.util.stream.Collectors;
 @Service
 public class BotEndpoint extends TelegramLongPollingBot {
 
-    public enum eBtnCommandsPrefix {basket_rem, basket_add, menu}
+    public enum eBtnCommandsPrefix {basket_rem, basket_add, menu, take_order}
 
     private final String botName;
     private final String token;
     private final BotCommands botController;
     private final BotButtonsBuilder buttonsBuilder;
+    private final long cookChatId;
     private final int menuPageSize;
 
     public BotEndpoint(
             @Value("${bot.name}") String botName
             , @Value("${bot.token}") String token
+            , @Value("${config.cook-chat-id}") long cookChatId
             , @Value("${config.buttons-size}") int menuPageSize
             , BotCommands botController, BotButtonsBuilder buttonsBuilder) {
         this.botName = botName;
         this.token = token;
         this.botController = botController;
         this.menuPageSize = menuPageSize;
+        this.cookChatId = cookChatId;
         this.buttonsBuilder = buttonsBuilder;
     }
 
@@ -51,6 +54,19 @@ public class BotEndpoint extends TelegramLongPollingBot {
     @Override
     public String getBotToken() {
         return this.token;
+    }
+
+    private void takeOrder(long chatId) {
+        try {
+            SendMessage answer = new SendMessage();
+            answer.setText("Надо приготовить:\r\n" +
+                    this.botController.getBasket(chatId).rows().stream()
+                            .map(MenuMatrixDto.MenuMatrixRowDto::name).collect(Collectors.joining(", ")));
+            answer.setChatId(this.cookChatId);
+            this.execute(answer);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -83,25 +99,40 @@ public class BotEndpoint extends TelegramLongPollingBot {
     private List<InlineKeyboardButton> processCommandMessage(
             String message, long chatId) throws URISyntaxException {
         switch (message.substring(1)) {
-            case "menu":
+            case "menu" -> {
                 return botController.getMenuGroups().rows()
                         .stream().map(b ->
                                 InlineKeyboardButton.builder().text(b.name()).callbackData(
                                         eBtnCommandsPrefix.menu.name() + "-" + b.id() + "-0").build())
                         .collect(Collectors.toList());
-            case "basket":
-                return botController.getBasket(chatId).rows().stream().map(b ->
+            }
+            case "basket" -> {
+                MenuMatrixDto basket = botController.getBasket(chatId);
+                List<InlineKeyboardButton> collect = basket.rows().stream().map(b ->
                                 InlineKeyboardButton.builder().text(b.name()).callbackData(
                                         eBtnCommandsPrefix.basket_rem.name() + "-" + b.id()).build())
                         .collect(Collectors.toList());
-            case "clear_basket":
+                if (basket.rows().size() != 0) {
+                    collect.add(InlineKeyboardButton.builder()
+                            .text("Оплатить "
+                                    + basket.rows().stream().mapToDouble(MenuMatrixDto.MenuMatrixRowDto::price).sum()
+                                    + " рублей")
+//                            .url("https://yookassa.ru/my")
+                            .callbackData(eBtnCommandsPrefix.take_order.name() + "-0")
+                            .build());
+                }
+                return collect;
+            }
+            case "clear_basket" -> {
                 botController.clearClientBasket(chatId);
                 return botController.getBasket(chatId).rows().stream().map(b ->
                                 InlineKeyboardButton.builder().text(b.name()).callbackData(
                                         eBtnCommandsPrefix.basket_rem.name() + "-" + b.id()).build())
                         .collect(Collectors.toList());
-            default:
+            }
+            default -> {
                 return null;
+            }
         }
     }
 
@@ -127,6 +158,9 @@ public class BotEndpoint extends TelegramLongPollingBot {
                             InlineKeyboardButton.builder().text(b.name()).callbackData(
                                     eBtnCommandsPrefix.basket_rem.name() + "-" + b.id()).build())
                     .collect(Collectors.toList());
+        } else if (callback.getCommand().equals(eBtnCommandsPrefix.take_order.name())) {
+            this.takeOrder(callbackQuery.getMessage().getChatId());
+            return List.of();
         }
         return null;
     }

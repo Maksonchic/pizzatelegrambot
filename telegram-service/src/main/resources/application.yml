@@ -11,6 +11,7 @@ connector:
 
 config:
   buttons-size: 8
+  cook-chat-id: -510601563
 
 spring:
   output:
