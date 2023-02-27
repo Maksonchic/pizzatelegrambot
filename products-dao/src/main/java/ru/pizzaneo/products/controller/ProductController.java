@@ -44,7 +44,6 @@ public class ProductController {
 
     @GetMapping("/products/{variationIdUuids}/all")
     public MenuMatrixDto getProducts(@PathVariable("variationIdUuids") List<String> productId) {
-        MenuMatrixDto menuMatrixDto = CurrentProductRow.toDto(productService.getProductsInfo(productId));
-        return menuMatrixDto;
+        return CurrentProductRow.toDto(productService.getProductsInfo(productId));
     }
 }
