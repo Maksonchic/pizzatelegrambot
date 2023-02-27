@@ -33,6 +33,12 @@ public class ClientController {
         this.clientsService.addProductToBasket(new Client(chatId, null), variationId);
     }
 
+    @PutMapping("/clients/history/{chatId}")
+    public void moveProductBasketToHistory(
+            @PathVariable("chatId") long chatId) {
+        this.clientsService.moveToHistory(new Client(chatId, null));
+    }
+
     @DeleteMapping("/clients/basket")
     public void removeBasketElement(@RequestBody Map<String, String> data) {
         this.clientsService.deleteFromClientBasket(

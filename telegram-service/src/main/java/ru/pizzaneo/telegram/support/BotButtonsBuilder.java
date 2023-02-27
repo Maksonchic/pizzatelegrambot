@@ -21,11 +21,10 @@ public class BotButtonsBuilder {
 
     public List<InlineKeyboardButton> createProductsPageButtons(final MenuMatrixDto menuItems, ButtonCallback callback) {
         List<InlineKeyboardButton> buttons = menuItems.rows().stream().map(b -> {
-                    String name = b.name();
                     String callbackData = BotEndpoint.eBtnCommandsPrefix.basket_add.name() + "-" + b.id();
                     return InlineKeyboardButton
                             .builder()
-                            .text(name)
+                            .text(String.format("%s (%s)", b.name(), b.price()))
                             .callbackData(callbackData)
                             .build();
                 })

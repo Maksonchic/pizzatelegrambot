@@ -44,6 +44,13 @@ public class ClientsServiceImpl implements ClientsService {
 
     @Override
     @Transactional
+    public void moveToHistory(Client client) {
+        this.basketRepository.updateClientHistory(client);
+        this.basketRepository.saveClientBasket(new Client(client.getChatId(), new ArrayList<>()));
+    }
+
+    @Override
+    @Transactional
     public void addProductToBasket(Client client, String variationId) {
         List<String> clientBasket = this.basketRepository.findByChatId(client.getChatId());
         clientBasket.add(variationId);

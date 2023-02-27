@@ -1,19 +1,23 @@
 Logging:
   level:
     ROOT: WARN
-    ru.pizzaneo: INFO
-
-connector:
-  products:
-    url: http://localhost:9001/
-  clients:
-    url: http://localhost:5468/
-
-config:
-  buttons-size: 8
-  cook-chat-id: -510601563
+    ru.pizzaneo: DEBUG
+  file:
+    name: logs/bot.log
 
 spring:
   output:
     ansi:
       enabled: ALWAYS
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+  health:
+    defaults:
+      enabled: true

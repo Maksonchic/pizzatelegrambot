@@ -59,4 +59,10 @@ public class ClientsAdapterImpl implements ClientsAdapter {
     public void clearClientBasket(final long chatId) {
         this.restTemplate.delete(this.clientsServiceHost + "clients/" + chatId + "/basket");
     }
+
+    @Override
+    public void moveBasketHistory(final long chatId) {
+        String resourceUrl = this.clientsServiceHost + "clients/history/" + chatId;
+        this.restTemplate.put(resourceUrl, null);
+    }
 }

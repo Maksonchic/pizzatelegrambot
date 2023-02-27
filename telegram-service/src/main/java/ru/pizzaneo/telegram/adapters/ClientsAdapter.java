@@ -9,4 +9,5 @@ public interface ClientsAdapter {
     void saveProductToClient(long chatId, String variationId);
     void deleteProductFromClient(long chatId, String variationId);
     void clearClientBasket(long chatId);
+    void moveBasketHistory(long chatId);
 }

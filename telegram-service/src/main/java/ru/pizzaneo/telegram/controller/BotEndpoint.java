@@ -37,7 +37,8 @@ public class BotEndpoint extends TelegramLongPollingBot {
             , @Value("${bot.token}") String token
             , @Value("${config.cook-chat-id}") long cookChatId
             , @Value("${config.buttons-size}") int menuPageSize
-            , BotCommands botController, BotButtonsBuilder buttonsBuilder) {
+            , BotCommands botController
+            , BotButtonsBuilder buttonsBuilder) {
         this.botName = botName;
         this.token = token;
         this.botController = botController;
@@ -56,12 +57,12 @@ public class BotEndpoint extends TelegramLongPollingBot {
         return this.token;
     }
 
-    private void takeOrder(long chatId) {
+    private void takeOrder(long chatId, String clientName) {
         try {
             SendMessage answer = new SendMessage();
-            answer.setText("Надо приготовить:\r\n" +
+            answer.setText("Заказ @" + clientName + ":\r\n" +
                     this.botController.getBasket(chatId).rows().stream()
-                            .map(MenuMatrixDto.MenuMatrixRowDto::name).collect(Collectors.joining(", ")));
+                            .map(b -> (" - " + b.name())).collect(Collectors.joining("\r\n")));
             answer.setChatId(this.cookChatId);
             this.execute(answer);
         } catch (TelegramApiException e) {
@@ -109,7 +110,7 @@ public class BotEndpoint extends TelegramLongPollingBot {
             case "basket" -> {
                 MenuMatrixDto basket = botController.getBasket(chatId);
                 List<InlineKeyboardButton> collect = basket.rows().stream().map(b ->
-                                InlineKeyboardButton.builder().text(b.name()).callbackData(
+                                InlineKeyboardButton.builder().text(String.format("%s (%s)", b.name(), b.price())).callbackData(
                                         eBtnCommandsPrefix.basket_rem.name() + "-" + b.id()).build())
                         .collect(Collectors.toList());
                 if (basket.rows().size() != 0) {
@@ -154,12 +155,10 @@ public class BotEndpoint extends TelegramLongPollingBot {
                     .collect(Collectors.toList());
         } else if (callback.getCommand().equals(eBtnCommandsPrefix.basket_rem.name())) {
             this.botController.deleteFromClientBasket(callbackQuery.getMessage().getChatId(), callback.getId());
-            return botController.getBasket(callbackQuery.getMessage().getChatId()).rows().stream().map(b ->
-                            InlineKeyboardButton.builder().text(b.name()).callbackData(
-                                    eBtnCommandsPrefix.basket_rem.name() + "-" + b.id()).build())
-                    .collect(Collectors.toList());
+            return this.processCommandMessage("/basket", callbackQuery.getMessage().getChatId());
         } else if (callback.getCommand().equals(eBtnCommandsPrefix.take_order.name())) {
-            this.takeOrder(callbackQuery.getMessage().getChatId());
+            this.takeOrder(callbackQuery.getMessage().getChatId(), callbackQuery.getMessage().getChat().getUserName());
+            this.botController.takeOrder(callbackQuery.getMessage().getChatId());
             return List.of();
         }
         return null;
@@ -180,7 +179,10 @@ public class BotEndpoint extends TelegramLongPollingBot {
     private void greetingsNewUser(final Message message) {
         try {
             SendMessage answer = new SendMessage();
-            answer.setText("Привет!\r\nДля начала работы нажми команду /menu\r\nКорзину можно посмотреть здесь /basket");
+            answer.setText("""
+                    Привет!\r
+                    Для начала работы нажми команду /menu\r
+                    Корзину можно посмотреть здесь /basket""");
             answer.setChatId(message.getChatId());
             this.execute(answer);
         } catch (TelegramApiException e) {

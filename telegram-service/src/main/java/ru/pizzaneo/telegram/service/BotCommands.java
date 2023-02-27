@@ -53,4 +53,8 @@ public class BotCommands {
     public void clearClientBasket(Long chatId) {
         clientsAdapter.clearClientBasket(chatId);
     }
+
+    public void takeOrder(final long chatId) {
+        this.clientsAdapter.moveBasketHistory(chatId);
+    }
 }

@@ -62,4 +62,20 @@ public class BasketDaoJdbc implements BasketDao {
                     " VALUES (:CHAT_ID, :PRODUCT_UUID)", params);
         }
     }
+
+    @Override
+    public void updateClientHistory(final Client client) {
+        List<String> curBasket = this.findByChatId(client.getChatId());
+        List<String> stmtParts = new ArrayList<>();
+        if (curBasket.size() != 0) {
+            for (String productUuid : curBasket) {
+                stmtParts.add(String.format("(%d, '%s')", client.getChatId(), productUuid));
+            }
+            MapSqlParameterSource src = new MapSqlParameterSource();
+            src.addValue("CHAT_ID", client.getChatId());
+            this.jdbcOperations.update("DELETE FROM BASKET_HISTORY WHERE CHAT_ID = :CHAT_ID", src);
+            this.jdbcOperations.update("INSERT INTO BASKET_HISTORY (CHAT_ID, PRODUCT_UUID) VALUES" +
+                    String.join(", ", stmtParts), new HashMap<>());
+        }
+    }
 }
