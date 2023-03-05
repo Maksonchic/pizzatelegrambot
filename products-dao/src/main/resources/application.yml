@@ -1,0 +1,25 @@
+logging:
+  level:
+    ROOT: WARN
+    ru.pizzaneo: DEBUG
+  file:
+    name: logs/products.log
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
+management:
+  products:
+    ping-url: "https://cloud.sigma.ru/static/version.json"
+  endpoints:
+    web:
+      exposure:
+        include: health, logfile
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: 9001

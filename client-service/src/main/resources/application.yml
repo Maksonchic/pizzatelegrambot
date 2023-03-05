@@ -1,0 +1,29 @@
+logging:
+  level:
+    ROOT: WARN
+    ru.pizzaneo: DEBUG
+  file:
+    name: logs/clients.log
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  datasource:
+    url: jdbc:mariadb://176.57.220.30:3306/pizzaneo
+  jpa:
+    show-sql: true
+
+management:
+  clients:
+    ping-url: "http://176.57.220.30:8080/"
+  endpoints:
+    web:
+      exposure:
+        include: health, logfile
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: 5468

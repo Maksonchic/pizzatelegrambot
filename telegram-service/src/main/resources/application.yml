@@ -1,0 +1,23 @@
+Logging:
+  level:
+    ROOT: WARN
+    ru.pizzaneo: DEBUG
+  file:
+    name: logs/bot.log
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+  health:
+    defaults:
+      enabled: true
